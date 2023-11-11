@@ -1,0 +1,13 @@
+name: PokeApp
+title: PokeApp
+username:
+account: rlsimpao
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 2433784
+bundleId: 3254228
+url: https://rlsimpao.shinyapps.io/PokeApp/
+when: 1591829551.7879
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .RData|api_dfs.R|gtrends_test.Rmd|notes|README.md|regex_test.R|renaming.R|statRole.R

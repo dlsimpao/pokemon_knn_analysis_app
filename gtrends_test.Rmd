@@ -1,0 +1,72 @@
+
+
+```{r, message = FALSE}
+pcks <- c('tidyverse','gtrendsR','parallel','lubridate')
+
+
+package.check <- lapply(pcks, FUN = function(x) {
+  if (!require(x, character.only = TRUE)) {
+    install.packages(x, dependencies = TRUE)
+  }
+})
+```
+
+```{r}
+# Way too slow
+#Sys.Date()
+queries <- api_mons$name %>% gsub('-',' ',.) 
+trend1 <- lapply(queries, function(x) ifelse(is.null(gtrends(x)$interest_over_time),0,gtrends(x)$interest_over_time))
+
+gtrends('pikachu phd')$interest_over_time
+```
+
+```{r}
+getHits <- function(query){
+  gtrends(query)$interest_over_time
+}
+```
+
+
+
+```{r}
+# ERROR b/c of looking for two many requests at the same time
+
+# the number of cores we have
+detectCores()
+
+# it will create a socket cluster on my own computer
+cl <- makeCluster(3)
+clusterEvalQ(cl,c(library(gtrendsR), library(parallel),library(curl)))
+
+trend1 <- parLapplyLB(cl, queries, getHits)
+
+# or if you want simplified result
+
+# parSapply(cl, queries, getHits)
+
+# stop the cluster after use
+stopCluster(cl)
+```
+
+```{r}
+library(lubridate)
+#Solved by the gsub. No problem finding trends now.
+mon1 <- 'marshadow'
+mon2 <- 'blissey'
+
+selected <- c(mon1,mon2)
+
+trend <- lapply(selected, 
+                function(x) gtrends(x)$interest_over_time %>%
+                  select(keyword,date,hits) %>% 
+                  filter(as.Date(date) > Sys.Date() - 31*3) %>% 
+                  mutate(hits = as.numeric(hits)))
+
+trends <- rbind(trend[[1]],trend[[2]])
+
+ggplot(trends, aes(x = date, y = hits)) + geom_line(aes(color = keyword), size = 1) + ylim(5,26)
+```
+
+```{r}
+gtrends('pikachu phd')
+```
